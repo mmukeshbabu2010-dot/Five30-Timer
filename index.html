@@ -29,7 +29,7 @@
       border-radius: 20px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
       text-align: center;
-      max-width: 400px;
+      max-width: 420px;
       width: 100%;
     }
 
@@ -61,13 +61,13 @@
 
     .buttons {
       display: flex;
-      gap: 12px;
+      gap: 10px;
     }
 
     button {
       flex: 1;
-      padding: 14px;
-      font-size: 1.1rem;
+      padding: 12px 8px;
+      font-size: 1rem;
       font-weight: 600;
       border: none;
       border-radius: 12px;
@@ -84,6 +84,15 @@
       background-color: #16a34a;
     }
 
+    .pause-btn {
+      background-color: #f59e0b;
+      color: #111827;
+    }
+
+    .pause-btn:hover {
+      background-color: #d97706;
+    }
+
     .stop-btn {
       background-color: #ef4444;
       color: #ffffff;
@@ -93,8 +102,9 @@
       background-color: #dc2626;
     }
 
-    .stop-btn:disabled {
+    button:disabled {
       background-color: #475569;
+      color: #94a3b8;
       cursor: not-allowed;
       opacity: 0.5;
     }
@@ -117,6 +127,7 @@
     
     <div class="buttons">
       <button class="start-btn" id="startBtn" onclick="startTimer()">Start</button>
+      <button class="pause-btn" id="pauseBtn" onclick="togglePause()" disabled>Pause</button>
       <button class="stop-btn" id="stopBtn" onclick="stopTimer()" disabled>Stop</button>
     </div>
 
@@ -128,10 +139,12 @@
     let timeLeft = DURATION;
     let timerInterval = null;
     let roundsCompleted = 0;
+    let isPaused = false;
 
     const display = document.getElementById('timeDisplay');
     const cycleDisplay = document.getElementById('cycleCount');
     const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
     const stopBtn = document.getElementById('stopBtn');
     const notifStatus = document.getElementById('notifStatus');
 
@@ -189,21 +202,7 @@
         `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
 
-    function startTimer() {
-      if (timerInterval) return;
-
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-
-      // Request notification permission on start click if not already handled
-      if ('Notification' in window && Notification.permission === 'default') {
-        Notification.requestPermission();
-      }
-
-      startBtn.disabled = true;
-      stopBtn.disabled = false;
-
+    function runTimer() {
       timerInterval = setInterval(() => {
         timeLeft--;
         updateDisplay();
@@ -219,14 +218,52 @@
       }, 1000);
     }
 
+    function startTimer() {
+      if (timerInterval) return;
+
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+
+      isPaused = false;
+      startBtn.disabled = true;
+      pauseBtn.disabled = false;
+      stopBtn.disabled = false;
+      pauseBtn.textContent = "Pause";
+
+      runTimer();
+    }
+
+    function togglePause() {
+      if (isPaused) {
+        // Resume timer
+        isPaused = false;
+        pauseBtn.textContent = "Pause";
+        runTimer();
+      } else {
+        // Pause timer
+        isPaused = true;
+        clearInterval(timerInterval);
+        timerInterval = null;
+        pauseBtn.textContent = "Resume";
+      }
+    }
+
     function stopTimer() {
       clearInterval(timerInterval);
       timerInterval = null;
+      isPaused = false;
       timeLeft = DURATION;
       updateDisplay();
 
       startBtn.disabled = false;
+      pauseBtn.disabled = true;
       stopBtn.disabled = true;
+      pauseBtn.textContent = "Pause";
     }
   </script>
 </body>
