@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuadPace - 4-Minute Interval Timer</title>
+  <title>QuadPace - 5:30 Interval Timer</title>
   <style>
     * {
       box-sizing: border-box;
@@ -120,9 +120,9 @@
 
   <div class="container">
     <h1>QuadPace</h1>
-    <p class="subtitle">Repeating 4-Minute Interval Timer</p>
+    <p class="subtitle">Repeating 5:30 Interval Timer</p>
     
-    <div class="timer-display" id="timeDisplay">04:00</div>
+    <div class="timer-display" id="timeDisplay">05:30</div>
     <div class="counter" id="cycleCount">Rounds Completed: 0</div>
     
     <div class="buttons">
@@ -135,7 +135,7 @@
   </div>
 
   <script>
-    const DURATION = 4 * 60; // 4 minutes in seconds
+    const DURATION = 5 * 60 + 30; // 5 minutes 30 seconds (330 seconds)
     let timeLeft = DURATION;
     let timerInterval = null;
     let roundsCompleted = 0;
@@ -189,7 +189,7 @@
     function triggerNotification() {
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification("QuadPace Timer", {
-          body: `Round ${roundsCompleted} completed! Starting next 4-minute block.`,
+          body: `Round ${roundsCompleted} completed! Starting next 5:30 block.`,
           icon: "https://fav.farm/⏱️"
         });
       }
@@ -212,7 +212,7 @@
           roundsCompleted++;
           cycleDisplay.textContent = `Rounds Completed: ${roundsCompleted}`;
           triggerNotification();
-          timeLeft = DURATION; // Reset to 4 minutes
+          timeLeft = DURATION; // Reset to 5 minutes 30 seconds
           updateDisplay();
         }
       }, 1000);
