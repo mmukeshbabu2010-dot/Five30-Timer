@@ -119,7 +119,7 @@
 <body>
 
   <div class="container">
-    <h1>QuadPace</h1>
+    <h1>Five30 Timer</h1>
     <p class="subtitle">Repeating 5:30 Interval Timer</p>
     
     <div class="timer-display" id="timeDisplay">05:30</div>
@@ -188,7 +188,7 @@
 
     function triggerNotification() {
       if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification("QuadPace Timer", {
+        new Notification("Five30 Timer", {
           body: `Round ${roundsCompleted} completed! Starting next 5:30 block.`,
           icon: "https://fav.farm/⏱️"
         });
