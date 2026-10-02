@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Repeating 4-Minute Timer</title>
+  <title>QuadPace - 4-Minute Interval Timer</title>
   <style>
     * {
       box-sizing: border-box;
@@ -34,23 +34,29 @@
     }
 
     h1 {
-      font-size: 1.5rem;
+      font-size: 1.8rem;
+      color: #38bdf8;
+      margin-bottom: 0.5rem;
+    }
+
+    p.subtitle {
+      font-size: 0.9rem;
       color: #94a3b8;
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
     }
 
     .timer-display {
       font-size: 5rem;
       font-weight: bold;
       font-family: monospace;
-      color: #38bdf8;
-      margin: 1.5rem 0;
+      color: #f8fafc;
+      margin: 1rem 0;
     }
 
     .counter {
       font-size: 1.1rem;
       color: #cbd5e1;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
 
     .buttons {
@@ -92,12 +98,20 @@
       cursor: not-allowed;
       opacity: 0.5;
     }
+
+    .notif-status {
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h1>Repeating 4-Min Timer</h1>
+    <h1>QuadPace</h1>
+    <p class="subtitle">Repeating 4-Minute Interval Timer</p>
+    
     <div class="timer-display" id="timeDisplay">04:00</div>
     <div class="counter" id="cycleCount">Rounds Completed: 0</div>
     
@@ -105,6 +119,8 @@
       <button class="start-btn" id="startBtn" onclick="startTimer()">Start</button>
       <button class="stop-btn" id="stopBtn" onclick="stopTimer()" disabled>Stop</button>
     </div>
+
+    <div class="notif-status" id="notifStatus">Notifications: Checking...</div>
   </div>
 
   <script>
@@ -117,8 +133,30 @@
     const cycleDisplay = document.getElementById('cycleCount');
     const startBtn = document.getElementById('startBtn');
     const stopBtn = document.getElementById('stopBtn');
+    const notifStatus = document.getElementById('notifStatus');
 
-    // Create audio context for alert sound
+    // Request notification permissions on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      if ('Notification' in window) {
+        if (Notification.permission === 'granted') {
+          notifStatus.textContent = "Notifications Enabled";
+        } else if (Notification.permission !== 'denied') {
+          Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+              notifStatus.textContent = "Notifications Enabled";
+            } else {
+              notifStatus.textContent = "Notifications Denied";
+            }
+          });
+        } else {
+          notifStatus.textContent = "Notifications Denied";
+        }
+      } else {
+        notifStatus.textContent = "Notifications Not Supported";
+      }
+    });
+
+    // Sound alert setup
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     function playBeep() {
@@ -128,11 +166,20 @@
       gain.connect(audioCtx.destination);
       
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Pitch (A5)
-      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
       
       osc.start();
-      osc.stop(audioCtx.currentTime + 0.8); // Beep duration
+      osc.stop(audioCtx.currentTime + 0.8);
+    }
+
+    function triggerNotification() {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification("QuadPace Timer", {
+          body: `Round ${roundsCompleted} completed! Starting next 4-minute block.`,
+          icon: "https://fav.farm/⏱️"
+        });
+      }
     }
 
     function updateDisplay() {
@@ -149,6 +196,11 @@
         audioCtx.resume();
       }
 
+      // Request notification permission on start click if not already handled
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+
       startBtn.disabled = true;
       stopBtn.disabled = false;
 
@@ -160,7 +212,8 @@
           playBeep();
           roundsCompleted++;
           cycleDisplay.textContent = `Rounds Completed: ${roundsCompleted}`;
-          timeLeft = DURATION; // Reset back to 4 minutes
+          triggerNotification();
+          timeLeft = DURATION; // Reset to 4 minutes
           updateDisplay();
         }
       }, 1000);
